@@ -14,11 +14,16 @@ fi
 # Run Git commands
 git add .
 git commit -m "$COMMIT_MSG"
-git push origin main
+
+# Get the default branch from the remote repository
+DEFAULT_BRANCH=$(git remote show origin | grep 'HEAD branch' | awk '{print $NF}')
+
+# Push to the default branch (either master or main)
+git push origin "$DEFAULT_BRANCH"
 
 echo "✅ Code pushed to GitHub!"
 echo "Commit message: $COMMIT_MSG"
-echo "Branch: main"
+echo "Branch: $DEFAULT_BRANCH"
 echo "Repository: $(git remote get-url origin)"
 echo "Timestamp: $(date '+%Y-%m-%d %H:%M:%S')"
 echo "----------------------------------------"
@@ -31,6 +36,7 @@ echo "----------------------------------------"
 echo "If you have any questions or feedback, feel free to reach out."
 echo "----------------------------------------"
 echo "Have a great day!"
+
 # echo sh auto-push.sh
 # echo sh auto-push.sh
 # echo sh auto-push.sh
