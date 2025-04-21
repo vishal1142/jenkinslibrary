@@ -1,8 +1,12 @@
-// This is gitCheckout.groovy
-def call(Map stageParams) {
+// vars/gitCheckout.groovy
+def call(Map stageParams = [:]) {
+    if (!stageParams.branch || !stageParams.url) {
+        error("Missing required parameters: 'branch' and 'url'")
+    }
+
     checkout([
         $class: 'GitSCM',
-        branches: [[name:  stageParams.branch]],
-        userRemoteConfigs: [[ url: stageParams.url ]]
+        branches: [[name: stageParams.branch]],
+        userRemoteConfigs: [[url: stageParams.url]]
     ])
 }
