@@ -1,10 +1,15 @@
 def call(Map params = [:]) {
     def credentialsId = params.get('credentialsId')
 
-    if (!credentialsId) {
-        error "Missing required parameter: credentialsId"
+    if (!credentialsId?.trim()) {
+        error "[QualityGateStatus] Missing required parameter: 'credentialsId'"
     }
 
-    echo "Waiting for SonarQube Quality Gate result..."
-    waitForQualityGate abortPipeline: true, credentialsId: credentialsId
+    echo "[QualityGateStatus] Waiting for SonarQube Quality Gate result..."
+    echo "[QualityGateStatus] Using credentialsId: ${credentialsId}"
+
+    waitForQualityGate(
+        abortPipeline: true,
+        credentialsId: credentialsId
+    )
 }
