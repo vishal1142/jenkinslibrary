@@ -1,21 +1,26 @@
-def call(Map params = [:]) {  // Provide a default empty map if none is passed
-    def credentialsId = params.credentialsId
-    def sonarHostUrl = params.get('sonarHostUrl', 'http://localhost:9000')  // Default URL is localhost if not provided
-    def sonarProjectKey = params.get('sonarProjectKey', null)
-    def sonarProjectName = params.get('sonarProjectName', null)
-    def sonarProjectVersion = params.get('sonarProjectVersion', null)
+def call(Map params = [:]) {
+    def credentialsId        = params.get('credentialsId')
+    def sonarHostUrl         = params.get('sonarHostUrl', 'http://localhost:9000')
+    def sonarProjectKey      = params.get('sonarProjectKey')
+    def sonarProjectName     = params.get('sonarProjectName')
+    def sonarProjectVersion  = params.get('sonarProjectVersion')
+
+    if (!credentialsId) {
+        error "Missing required parameter: credentialsId"
+    }
 
     withSonarQubeEnv(credentialsId: credentialsId) {
-        // Set the custom SonarQube host URL if provided
+        echo "Using SonarQube host: ${sonarHostUrl}"
         env.SONAR_HOST_URL = sonarHostUrl
 
-        sh 'echo "SonarQube host: $SONAR_HOST_URL"'
-        
         def sonarCmd = 'mvn clean package sonar:sonar'
+
         if (sonarProjectKey && sonarProjectName && sonarProjectVersion) {
-            sonarCmd += " -Dsonar.projectKey=${sonarProjectKey} -Dsonar.projectName=${sonarProjectName} -Dsonar.projectVersion=${sonarProjectVersion}"
+            sonarCmd += " -Dsonar.projectKey='${sonarProjectKey}'"
+            sonarCmd += " -Dsonar.projectName='${sonarProjectName}'"
+            sonarCmd += " -Dsonar.projectVersion='${sonarProjectVersion}'"
         }
-        
+
         sh sonarCmd
     }
 }
