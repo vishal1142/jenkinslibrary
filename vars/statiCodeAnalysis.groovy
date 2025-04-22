@@ -1,10 +1,14 @@
 def call(Map params) {
     def credentialsId = params.credentialsId
+    def sonarHostUrl = params.get('sonarHostUrl', 'http://localhost:9000')  // Default URL is localhost if not provided
     def sonarProjectKey = params.get('sonarProjectKey', null)
     def sonarProjectName = params.get('sonarProjectName', null)
     def sonarProjectVersion = params.get('sonarProjectVersion', null)
 
     withSonarQubeEnv(credentialsId: credentialsId) {
+        // Set the custom SonarQube host URL if provided
+        env.SONAR_HOST_URL = sonarHostUrl
+
         sh 'echo "SonarQube host: $SONAR_HOST_URL"'
         
         def sonarCmd = 'mvn clean package sonar:sonar'
@@ -14,4 +18,4 @@ def call(Map params) {
         
         sh sonarCmd
     }
-}
+} 
