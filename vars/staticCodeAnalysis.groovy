@@ -1,7 +1,7 @@
 def call(Map params = [:]) {
     // Extract parameters
     def credentialsId        = params.get('credentialsId')
-    def sonarHostUrl         = params.get('sonarHostUrl', 'http://localhost:9000')  // Default to local SonarQube if not provided
+    def sonarHostUrl         = params.get('sonarHostUrl', 'http://192.168.1.141:9000')  // Default to local SonarQube if not provided
     def sonarProjectKey      = params.get('sonarProjectKey')
     def sonarProjectName     = params.get('sonarProjectName')
     def sonarProjectVersion  = params.get('sonarProjectVersion')
