@@ -1,25 +1,58 @@
 def call(Map args) {
-    // Use parameter names that match the Jenkinsfile
-    def project = args.ImageName ?: error("Missing parameter: ImageName")  // Corresponds to 'ImageName' in Jenkinsfile
-    def imageTag = args.ImageTag ?: "latest"  // Default to 'latest' if not provided
-    def hubUser = args.DockerHubUser ?: error("Missing parameter: DockerHubUser")  // Corresponds to 'DockerHubUser' in Jenkinsfile
+    def project  = args.ImageName ?: error("Missing parameter: ImageName")
+    def imageTag = args.ImageTag ?: "latest"
+    def hubUser  = args.DockerHubUser ?: error("Missing parameter: DockerHubUser")
 
-    // Docker image full name
-    def fullImageName = "${hubUser}/${project}:${imageTag}"
-
-    // Trivy scan commands
     sh """
-        echo "Running Trivy scan on ${fullImageName}..."
-        trivy image ${fullImageName} --severity HIGH,CRITICAL --exit-code 1 --no-progress --quiet > scan.txt
+        echo "Running Trivy scan on ${hubUser}/${project}:${imageTag}..."
+        trivy image ${hubUser}/${project}:${imageTag} > scan.txt
         cat scan.txt
     """
 }
 
-        // trivy image ${fullImageName} --severity HIGH,CRITICAL --exit-code 1 --no-progress --quiet > scan.txt
-        // cat scan.txt
-        // if grep -q 'HIGH|CRITICAL' scan.txt; then
-        //     echo 'Vulnerabilities found in the image. Please check the scan report.'
-        //     exit 1
-        // else
-        //     echo 'No vulnerabilities found in the image.'
-        // fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// def call(Map args) {
+//     // Use parameter names that match the Jenkinsfile
+//     def project = args.ImageName ?: error("Missing parameter: ImageName")  // Corresponds to 'ImageName' in Jenkinsfile
+//     def imageTag = args.ImageTag ?: "latest"  // Default to 'latest' if not provided
+//     def hubUser = args.DockerHubUser ?: error("Missing parameter: DockerHubUser")  // Corresponds to 'DockerHubUser' in Jenkinsfile
+
+//     // Docker image full name
+//     def fullImageName = "${hubUser}/${project}:${imageTag}"
+
+//     // Trivy scan commands
+//     sh """
+//         echo "Running Trivy scan on ${fullImageName}..."
+//         trivy image ${fullImageName} --severity HIGH,CRITICAL --exit-code 1 --no-progress --quiet > scan.txt
+//         cat scan.txt
+//     """
+// }
+
+//         // trivy image ${fullImageName} --severity HIGH,CRITICAL --exit-code 1 --no-progress --quiet > scan.txt
+//         // cat scan.txt
+//         // if grep -q 'HIGH|CRITICAL' scan.txt; then
+//         //     echo 'Vulnerabilities found in the image. Please check the scan report.'
+//         //     exit 1
+//         // else
+//         //     echo 'No vulnerabilities found in the image.'
+//         // fi
