@@ -12,7 +12,7 @@ def call(Map args) {
         echo "Running Trivy scan on ${fullImageName}..."
         trivy image ${fullImageName} --severity HIGH,CRITICAL --exit-code 1 --ignore-unfixed --no-progress > scan.txt
         cat scan.txt
-        if grep -q "HIGH\|CRITICAL" scan.txt; then
+        if grep -q "HIGH\\|CRITICAL" scan.txt; then
             echo "Vulnerabilities found in the image. Please check the scan report."
             exit 1
         else
