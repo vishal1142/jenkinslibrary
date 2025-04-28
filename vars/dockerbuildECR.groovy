@@ -1,11 +1,18 @@
-// dockerpush.groovy
-def call(Map params) {
-    script {
-        // Pull Docker image from DockerHub
-        echo "Tagging and pushing Docker image to AWS ECR..."
-        sh """
-            docker tag ${params.DockerHubUser}/${params.ImageName}:${params.ImageTag} ${params.AWS_ACCOUNT_ID}.dkr.ecr.${params.AWS_REGION}.amazonaws.com/${params.ECR_REPO_NAME}:${params.ImageTag}
-            docker push ${params.AWS_ACCOUNT_ID}.dkr.ecr.${params.AWS_REGION}.amazonaws.com/${params.ECR_REPO_NAME}:${params.ImageTag}
-        """
+def call(String imageName, String dockerfilePath, String tag = 'latest') {
+    try {
+        // Build Docker image
+        def image = docker.build("${imageName}:${tag}", "-f ${dockerfilePath} .")
+        
+        // Login to AWS ECR
+        withAWS(credentials: 'aws-credentials-id') {
+            sh 'aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin <your_account_id>.dkr.ecr.us-west-2.amazonaws.com'
+        }
+        
+        // Push Docker image to ECR
+        image.push(tag)
+        echo "Docker image pushed to ECR: ${imageName}:${tag}"
+        
+    } catch (Exception e) {
+        error "Error pushing Docker image to ECR: ${e.message}"
     }
 }
