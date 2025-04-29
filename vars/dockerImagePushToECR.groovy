@@ -1,25 +1,12 @@
-def call(String imageName, String tag, String accountId, String region) {
-    def repoUrl = "${accountId}.dkr.ecr.${region}.amazonaws.com"
-    def fullImageName = "${repoUrl}/${imageName}:${tag}"
-    def latestImageName = "${repoUrl}/${imageName}:latest"
+// dockerPushEcr.groovy
 
-    withCredentials([usernamePassword(
-        credentialsId: 'aws-ecr-creds',
-        usernameVariable: 'AWS_ACCESS_KEY_ID',
-        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
-    )]) {
-        sh """
-            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+def call(Map config) {
+    def ecrImageName = "${config.AWS_ACCOUNT_ID}.dkr.ecr.${config.REGION}.amazonaws.com/${config.ECR_REPO_NAME}:${config.ImageTag}"
+    echo "Pushing Docker image to AWS ECR: ${ecrImageName}"
 
-            aws ecr get-login-password --region ${region} | \
-            docker login --username AWS --password-stdin ${repoUrl}
+    // Tagging the image with the ECR repository name
+    sh "docker tag ${config.ImageName}:${config.ImageTag} ${ecrImageName}"
 
-            docker tag ${imageName}:${tag} ${fullImageName}
-            docker tag ${imageName}:${tag} ${latestImageName}
-
-            docker push ${fullImageName}
-            docker push ${latestImageName}
-        """
-    }
+    // Pushing the image to AWS ECR
+    sh "docker push ${ecrImageName}"
 }
