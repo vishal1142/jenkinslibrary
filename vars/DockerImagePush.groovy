@@ -1,25 +1,29 @@
-def call(String imageName, String tag, String accountId, String region) {
-    def repoUrl = "${accountId}.dkr.ecr.${region}.amazonaws.com"
-    def fullImageName = "${repoUrl}/${imageName}:${tag}"
-    def latestImageName = "${repoUrl}/${imageName}:latest"
-
+def call(String project, String ImageTag, String hubUser) {
+    // Login to DockerHub using provided credentials
     withCredentials([usernamePassword(
-        credentialsId: 'aws-ecr-creds',
-        usernameVariable: 'AWS_ACCESS_KEY_ID',
-        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+        credentialsId: 'vishal',  // Replace with the correct Jenkins credentials ID for DockerHub
+        usernameVariable: 'USER',
+        passwordVariable: 'PASS'
     )]) {
         sh """
-            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-
-            aws ecr get-login-password --region ${region} | \
-            docker login --username AWS --password-stdin ${repoUrl}
-
-            docker tag ${imageName}:${tag} ${fullImageName}
-            docker tag ${imageName}:${tag} ${latestImageName}
-
-            docker push ${fullImageName}
-            docker push ${latestImageName}
+            echo "Logging into DockerHub with user: \$USER"
+            docker login -u "\$USER" -p "\$PASS"
         """
     }
+
+    // Define the full image name and latest tag
+    def fullImageName = "${hubUser}/${project}:${ImageTag}"
+    def latestImageName = "${hubUser}/${project}:latest"
+
+    // Push the specific version of the image
+    echo "Pushing Docker image: ${fullImageName}"
+    sh "docker push ${fullImageName}"
+
+    // Tag the image as 'latest'
+    echo "Tagging image as latest: ${latestImageName}"
+    sh "docker tag ${fullImageName} ${latestImageName}"
+
+    // Push the latest image to DockerHub
+    echo "Pushing Docker image: ${latestImageName}"
+    sh "docker push ${latestImageName}"
 }
