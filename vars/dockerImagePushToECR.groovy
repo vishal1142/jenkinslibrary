@@ -1,4 +1,6 @@
-def DockerImagePushToECR(String imageName, String imageTag, String registryUrl, String region) {
+// vars/DockerImagePushToECR.groovy
+
+def call(String imageName, String imageTag, String registryUrl, String region) {
     def fullImageName = "${registryUrl}/${imageName}:${imageTag}"
     def latestImageName = "${registryUrl}/${imageName}:latest"
 
