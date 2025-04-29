@@ -1,23 +1,25 @@
-def DockerImagePushToECR(String project, String ImageTag, String ecrUrl, String region) {
-    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
+def DockerImagePushToECR(String imageName, String imageTag, String registryUrl, String region) {
+    def fullImageName = "${registryUrl}/${imageName}:${imageTag}"
+    def latestImageName = "${registryUrl}/${imageName}:latest"
+
+    withCredentials([usernamePassword(
+        credentialsId: 'aws-ecr-creds',
+        usernameVariable: 'AWS_ACCESS_KEY_ID',
+        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+    )]) {
         sh """
-            echo "Authenticating Docker with AWS ECR..."
-            aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${ecrUrl}
+            echo "Authenticating with AWS ECR..."
+            export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID
+            export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY
+            aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${registryUrl}
         """
     }
 
-    def fullImageName = "${ecrUrl}/${project}:${ImageTag}"
-    def latestImageName = "${ecrUrl}/${project}:latest"
+    echo "Tagging Docker image..."
+    sh "docker tag ${imageName}:${imageTag} ${fullImageName}"
+    sh "docker tag ${imageName}:${imageTag} ${latestImageName}"
 
-    echo "Tagging image: ${fullImageName}"
-    sh "docker tag ${project}:${ImageTag} ${fullImageName}"
-
-    echo "Pushing Docker image: ${fullImageName}"
+    echo "Pushing Docker images to ECR..."
     sh "docker push ${fullImageName}"
-
-    echo "Tagging image as latest: ${latestImageName}"
-    sh "docker tag ${project}:${ImageTag} ${latestImageName}"
-
-    echo "Pushing Docker image: ${latestImageName}"
     sh "docker push ${latestImageName}"
 }
