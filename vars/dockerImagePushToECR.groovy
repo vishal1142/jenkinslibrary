@@ -1,25 +1,17 @@
+// jenkinslibrary/vars/dockerImagePushToECR.groovy
+
 def call(Map config) {
-    // Extract required parameters from the config map
-    def awsAccountId = config.awsAccountId
-    def region       = config.region
-    def ecrRepoName  = config.ecrRepoName
-    def imageName    = config.imageName
-    def imageTag     = config.imageTag
+    def imageName = config.ImageName
+    def imageTag = config.ImageTag
+    def accountId = config.AWS_ACCOUNT_ID
+    def region = config.REGION
+    def repoName = config.ECR_REPO_NAME
 
-    // Construct the full ECR image URL
-    def fullEcrImageUrl = "${awsAccountId}.dkr.ecr.${region}.amazonaws.com/${ecrRepoName}:${imageTag}"
+    def fullImageName = "${accountId}.dkr.ecr.${region}.amazonaws.com/${repoName}:${imageTag}"
 
-    // Tag and push the Docker image to ECR
     sh """
-        echo "Tagging Docker image: ${imageName}:${imageTag} -> ${fullEcrImageUrl}"
-        docker tag ${imageName}:${imageTag} ${fullEcrImageUrl}
-
-        echo "Authenticating with AWS ECR..."
-        aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${awsAccountId}.dkr.ecr.${region}.amazonaws.com
-
-        echo "Pushing Docker image to ECR repository..."
-        docker push ${fullEcrImageUrl}
-
-        echo "Docker image pushed successfully: ${fullEcrImageUrl}"
+        aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${accountId}.dkr.ecr.${region}.amazonaws.com
+        docker tag ${imageName}:${imageTag} ${fullImageName}
+        docker push ${fullImageName}
     """
 }
