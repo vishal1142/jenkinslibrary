@@ -1,7 +1,9 @@
 def call(Map params = [:]) {
     // Extract parameters
     def credentialsId        = params.get('credentialsId')
-    def sonarHostUrl         = params.get('sonarHostUrl', 'http://localhost:9000')
+    // Must match Jenkins → Manage Jenkins → SonarQube installations (CasC: local-sonarqube).
+    def installationName     = params.get('installationName', 'local-sonarqube')
+    def sonarHostUrl         = params.get('sonarHostUrl', 'http://code-analyzer:9000')
     def sonarProjectKey      = params.get('sonarProjectKey')
     def sonarProjectName     = params.get('sonarProjectName')
     def sonarProjectVersion  = params.get('sonarProjectVersion')
@@ -11,8 +13,8 @@ def call(Map params = [:]) {
         error "Missing required parameter: credentialsId"
     }
 
-    // Use the SonarQube environment
-    withSonarQubeEnv(credentialsId: credentialsId) {
+    // Named installation is required (see Jenkins SonarQube Scanner plugin docs).
+    withSonarQubeEnv(installationName: installationName, credentialsId: credentialsId) {
         echo "Using SonarQube host: ${sonarHostUrl}"
         env.SONAR_HOST_URL = sonarHostUrl
 
