@@ -6,15 +6,14 @@ def call(Map args) {
     // This variable is only available inside this method
     def fullImageName = "${hubUser}/${project}:${imageTag}"
 
-    // Trivy Scan with DB preload
+    // Run Trivy from container to avoid host-level Trivy installation drift.
     sh """
-        echo "📥 Preloading Trivy vulnerability database..."
-        trivy image --download-db-only || true
-
         echo "🔍 Running Trivy scan on ${fullImageName}..."
-        trivy image --timeout 5m ${fullImageName} --severity HIGH,CRITICAL --exit-code 1 --no-progress --quiet > scan.txt
-
-        echo "📄 Vulnerability scan results:"
-        cat scan.txt
+        docker run --rm aquasec/trivy:latest image \
+          --timeout 5m \
+          --severity HIGH,CRITICAL \
+          --exit-code 1 \
+          --no-progress \
+          ${fullImageName}
     """
 }

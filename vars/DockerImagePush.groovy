@@ -1,7 +1,7 @@
-def call(String project, String ImageTag, String hubUser) {
+def call(String project, String ImageTag, String hubUser, String credentialsId = 'vishal') {
     // Login to DockerHub using provided credentials
     withCredentials([usernamePassword(
-        credentialsId: 'vishal',  // Replace with the correct Jenkins credentials ID for DockerHub
+        credentialsId: credentialsId,
         usernameVariable: 'USER',
         passwordVariable: 'PASS'
     )]) {
