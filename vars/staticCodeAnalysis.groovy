@@ -16,18 +16,32 @@ def call(Map params = [:]) {
         echo "Using SonarQube host: ${sonarHostUrl}"
         env.SONAR_HOST_URL = sonarHostUrl
 
-        // Construct the SonarQube command to run analysis
-        def sonarCmd = 'mvn clean package sonar:sonar'
+        // Construct the SonarQube arguments to run analysis
+        def sonarArgs = 'clean package sonar:sonar'
 
         // Append project details if provided
         if (sonarProjectKey && sonarProjectName && sonarProjectVersion) {
-            sonarCmd += " -Dsonar.projectKey='${sonarProjectKey}'"
-            sonarCmd += " -Dsonar.projectName='${sonarProjectName}'"
-            sonarCmd += " -Dsonar.projectVersion='${sonarProjectVersion}'"
+            sonarArgs += " -Dsonar.projectKey='${sonarProjectKey}'"
+            sonarArgs += " -Dsonar.projectName='${sonarProjectName}'"
+            sonarArgs += " -Dsonar.projectVersion='${sonarProjectVersion}'"
         }
 
-        // Run the SonarQube analysis command
+        def sonarCmd = "mvn ${sonarArgs}"
         echo "Executing SonarQube analysis with command: ${sonarCmd}"
-        sh sonarCmd
+        sh """
+            if command -v mvn >/dev/null 2>&1; then
+                echo "[staticCodeAnalysis] Using local Maven"
+                ${sonarCmd}
+            else
+                echo "[staticCodeAnalysis] Local Maven not found, using Docker Maven image"
+                mkdir -p "\$HOME/.m2"
+                docker run --rm \\
+                    -v "\$PWD":/workspace \\
+                    -v "\$HOME/.m2":/root/.m2 \\
+                    -w /workspace \\
+                    maven:3.9.9-eclipse-temurin-17 \\
+                    ${sonarCmd}
+            fi
+        """
     }
 }
