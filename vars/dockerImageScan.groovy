@@ -7,9 +7,15 @@ def call(Map args) {
     def fullImageName = "${hubUser}/${project}:${imageTag}"
 
     // Run Trivy from container to avoid host-level Trivy installation drift.
+    // Prefer GHCR image; fallback to Docker Hub with pinned tag.
     sh """
-        echo "🔍 Running Trivy scan on ${fullImageName}..."
-        docker run --rm aquasec/trivy:latest image \
+        echo "Running Trivy scan on ${fullImageName}..."
+        TRIVY_IMAGE="ghcr.io/aquasecurity/trivy:latest"
+        if ! docker pull "\$TRIVY_IMAGE" >/dev/null 2>&1; then
+          TRIVY_IMAGE="aquasec/trivy:0.57.1"
+          docker pull "\$TRIVY_IMAGE" >/dev/null 2>&1
+        fi
+        docker run --rm "\$TRIVY_IMAGE" image \
           --timeout 5m \
           --severity HIGH,CRITICAL \
           --exit-code 1 \
