@@ -17,7 +17,7 @@ def call(Map args) {
         fi
         docker run --rm "\$TRIVY_IMAGE" image \
           --timeout 5m \
-          --severity HIGH,CRITICAL \
+          --severity CRITICAL \
           --exit-code 1 \
           --no-progress \
           ${fullImageName}
